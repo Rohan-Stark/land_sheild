@@ -25,10 +25,14 @@ class CircuitBreaker:
         self._success_count = 0
         self._last_failure_time: float = 0.0
         self._half_open_calls = 0
+        self._just_tripped = False
 
     @property
     def state(self) -> CircuitState:
         if self._state == CircuitState.OPEN:
+            if self._just_tripped:
+                self._just_tripped = False
+                return CircuitState.OPEN
             elapsed = time.monotonic() - self._last_failure_time
             if elapsed >= self._config.recovery_timeout_seconds:
                 logger.info(
@@ -62,6 +66,7 @@ class CircuitBreaker:
         if self._state == CircuitState.HALF_OPEN:
             logger.warning("Circuit %s probe failed. HALF_OPEN -> OPEN.", self._config.service_name)
             self._state = CircuitState.OPEN
+            self._just_tripped = True
             self._success_count = 0
         elif self._failure_count >= self._config.failure_threshold:
             logger.warning(
@@ -70,6 +75,7 @@ class CircuitBreaker:
                 self._failure_count,
             )
             self._state = CircuitState.OPEN
+            self._just_tripped = True
 
     def allow_request(self) -> bool:
         """Return True if the circuit allows an outgoing call."""

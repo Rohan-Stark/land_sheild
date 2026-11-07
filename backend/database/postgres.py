@@ -185,7 +185,7 @@ class DocumentChunk(Base):
     chunk_index = Column(Integer, nullable=False)
     chunk_text = Column(Text, nullable=False)
     embedding_id = Column(String(255), nullable=False, unique=True)
-    metadata = Column(JSONB, nullable=True)
+    chunk_metadata = Column("metadata", JSONB, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     document = relationship("Document", back_populates="chunks")
@@ -204,7 +204,7 @@ class KnowledgeBase(Base):
     title = Column(String(512), nullable=False)
     content = Column(Text, nullable=False)
     embedding_id = Column(String(255), nullable=True, unique=True)
-    metadata = Column(JSONB, nullable=True)
+    kb_metadata = Column("metadata", JSONB, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()

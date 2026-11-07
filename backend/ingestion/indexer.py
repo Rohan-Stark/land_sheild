@@ -158,7 +158,7 @@ async def ingest_document(
             chunk_index=i,
             chunk_text=chunk_text_str,
             embedding_id=embedding_ids[i],
-            metadata=extracted_meta,
+            chunk_metadata=extracted_meta,
         )
         db.add(db_chunk)
 

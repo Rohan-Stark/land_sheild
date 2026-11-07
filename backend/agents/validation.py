@@ -27,7 +27,7 @@ def validate_retrieval(context: AgentContext, requires_retrieval: bool) -> None:
     """Validate that retrieval data is present if required by the agent."""
     if requires_retrieval and not context.retrievalResults:
         raise AgentValidationError(
-            "Agent requires retrieval context, but none was provided or retrieval yielded no results."
+            "Agent requires retrieval context and retrieved documents, but none was provided or retrieval yielded no results."
         )
 
 
