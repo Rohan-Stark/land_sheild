@@ -2,39 +2,69 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-@layer base {
-  :root {
-    --color-canvas: #f8fafc;
-    --color-surface: #ffffff;
-    --color-text-main: #0f172a;
-    --color-text-sub: #334155;
-    --color-text-muted: #64748b;
-    --color-border: #e2e8f0;
-  }
+/* Explicit CSS Theme Variables */
+:root {
+  --color-canvas: #f8fafc;
+  --color-card: #ffffff;
+  --color-card-muted: #f1f5f9;
+  --color-text-title: #0f172a;
+  --color-text-body: #334155;
+  --color-text-muted: #64748b;
+  --color-border: #e2e8f0;
+}
 
-  .dark {
-    --color-canvas: #07090e;
-    --color-surface: #0f172a;
-    --color-text-main: #f8fafc;
-    --color-text-sub: #cbd5e1;
-    --color-text-muted: #94a3b8;
-    --color-border: #1e293b;
-  }
+.dark {
+  --color-canvas: #07090e;
+  --color-card: #0f1629;
+  --color-card-muted: #161f38;
+  --color-text-title: #f8fafc;
+  --color-text-body: #cbd5e1;
+  --color-text-muted: #94a3b8;
+  --color-border: #1e293b;
 }
 
 html {
   scroll-behavior: smooth;
+  color-scheme: light dark;
 }
 
+/* Base typography ensuring high contrast in both modes */
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   margin: 0;
   padding: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: var(--color-canvas);
+  color: var(--color-text-title);
 }
 
-/* Custom crisp scrollbar */
+/* Light mode strict high-contrast text safeguards */
+html:not(.dark) .light-title {
+  color: #0f172a !important;
+}
+html:not(.dark) .light-body {
+  color: #334155 !important;
+}
+html:not(.dark) .light-muted {
+  color: #64748b !important;
+}
+html:not(.dark) .light-card {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+html:not(.dark) .light-subcard {
+  background-color: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+html:not(.dark) .light-deed-text {
+  color: #0f172a !important;
+  background-color: #f8fafc !important;
+}
+
+/* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
