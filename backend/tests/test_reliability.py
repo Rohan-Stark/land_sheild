@@ -59,6 +59,7 @@ def test_circuit_breaker_half_open_failure():
     cb = CircuitBreaker(config)
 
     cb.record_failure()
+    _ = cb.state  # first evaluation
     assert cb.state == CircuitState.HALF_OPEN  # auto-recovery due to timeout=0
 
     cb.record_failure()

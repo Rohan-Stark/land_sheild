@@ -58,7 +58,7 @@ async def execute_keyword_search(
                     document_id=str(chunk.document_id),
                     chunk_index=chunk.chunk_index,
                     text=chunk.chunk_text,
-                    metadata=chunk.metadata or {},
+                    metadata=chunk.chunk_metadata or {},
                     keyword_score=1.0,
                 )
             )

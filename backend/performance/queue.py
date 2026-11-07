@@ -90,7 +90,7 @@ class QueueManager:
         """Handle a failed task. Re-enqueue or move to DLQ."""
         task.error = error
 
-        if task.attempt < task.max_retries:
+        if task.attempt <= task.max_retries:
             task.status = TaskStatus.PENDING
             await self.enqueue(task)
             logger.warning("Re-enqueued task %s (attempt %d/%d)", task.id, task.attempt, task.max_retries)

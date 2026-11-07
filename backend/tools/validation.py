@@ -22,7 +22,7 @@ class PermissionValidator:
         except ValueError:
             raise ToolPermissionError("Invalid UUID format for user_id or property_id.")
 
-        stmt = select(Property.id).where(Property.id == pid, Property.user_id == uid)
+        stmt = select(Property.id).where(Property.id == pid, Property.owner_id == uid)
         result = await db.execute(stmt)
         if not result.scalar_one_or_none():
             # Standardizing to PermissionError so we don't leak existence of properties they don't own.

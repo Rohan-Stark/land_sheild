@@ -6,7 +6,8 @@ import re
 class InputSanitizer:
     """Removes potentially dangerous payloads from user inputs."""
 
-    # Strip HTML tags
+    # Strip script and style blocks with contents, then strip all HTML tags
+    SCRIPT_STYLE_REGEX = re.compile(r"<(script|style)[^>]*>.*?</\1>", re.IGNORECASE | re.DOTALL)
     HTML_REGEX = re.compile(r"<[^>]*>")
     
     # Strip carriage returns and line feeds to prevent log injection
@@ -18,7 +19,8 @@ class InputSanitizer:
         if not text:
             return text
             
-        clean = InputSanitizer.HTML_REGEX.sub("", text)
+        clean = InputSanitizer.SCRIPT_STYLE_REGEX.sub("", text)
+        clean = InputSanitizer.HTML_REGEX.sub("", clean)
         clean = InputSanitizer.LOG_INJECTION_REGEX.sub(" ", clean)
         return clean.strip()
 

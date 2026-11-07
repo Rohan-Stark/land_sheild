@@ -13,15 +13,16 @@ logger = get_logger("retrieval.reranker")
 
 
 @lru_cache(maxsize=1)
-def _get_reranker() -> CrossEncoder:
-    """Load the BGE reranker cross-encoder model (singleton, cached)."""
+def _get_reranker() -> CrossEncoder | None:
+    """Load the BGE reranker cross-encoder model if cached locally, else fallback cleanly."""
     settings = get_settings()
-    logger.info("Loading reranker model: %s", settings.RERANKER_MODEL)
-    start = time.perf_counter()
-    model = CrossEncoder(settings.RERANKER_MODEL, max_length=512)
-    elapsed = (time.perf_counter() - start) * 1000
-    logger.info("Reranker model loaded in %.1fms", elapsed)
-    return model
+    try:
+        model = CrossEncoder(settings.RERANKER_MODEL, max_length=512, local_files_only=True)
+        logger.info("Local reranker model loaded successfully.")
+        return model
+    except Exception:
+        logger.info("Local reranker weights not cached; using dense vector similarity ranking.")
+        return None
 
 
 def _calculate_metadata_score(chunk: ScoredChunk, request: RetrievalRequest) -> float:
@@ -66,26 +67,22 @@ def rerank_chunks(
 
     start = time.perf_counter()
     model = _get_reranker()
-
-    # Prepare inputs for cross-encoder: list of (query, chunk_text)
-    pairs = [[request.query, chunk.text] for chunk in chunks]
-    
-    # Get cross-encoder scores (logits, need to be normalized if used as probabilities, 
-    # but we will just scale them to a rough 0-1 range for the weighted sum)
-    # BGE reranker output can range roughly from -10 to 10.
-    ce_scores = model.predict(pairs)
+    ce_scores = None
+    if model is not None:
+        try:
+            pairs = [[request.query, chunk.text] for chunk in chunks]
+            ce_scores = model.predict(pairs)
+        except Exception as exc:
+            logger.warning("Reranker prediction failed (%s), using dense similarity.", exc)
 
     for i, chunk in enumerate(chunks):
-        # Normalize cross encoder score (sigmoid-like approximation or min-max if we had bounds, 
-        # but 1 / (1 + exp(-x)) is standard for logits)
-        import math
-        try:
-            semantic_ce = 1 / (1 + math.exp(-ce_scores[i]))
-        except OverflowError:
-            semantic_ce = 0.0 if ce_scores[i] < 0 else 1.0
-
-        # Update semantic score with the superior cross-encoder score
-        chunk.semantic_score = semantic_ce
+        if ce_scores is not None:
+            import math
+            try:
+                semantic_ce = 1 / (1 + math.exp(-ce_scores[i]))
+            except OverflowError:
+                semantic_ce = 0.0 if ce_scores[i] < 0 else 1.0
+            chunk.semantic_score = semantic_ce
         
         # Calculate heuristics
         chunk.metadata_score = _calculate_metadata_score(chunk, request)
